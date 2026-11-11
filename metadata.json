@@ -1,0 +1,6 @@
+{
+  "name": "DIT Campus Hub - Lecturer Part-Time Claims & Session Management",
+  "description": "Full-stack web application for Dar es Salaam Institute of Technology (DIT) managing part-time lecturer consultation claims, teaching timetables, session logging, document verification, and administrative approvals.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

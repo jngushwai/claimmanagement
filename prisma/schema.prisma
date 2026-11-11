@@ -1,0 +1,164 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Department {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  code        String       @unique
+  programmes  Programme[]
+  lecturers   Lecturer[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Programme {
+  id           String      @id @default(uuid())
+  name         String
+  code         String      @unique
+  departmentId String
+  department   Department  @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  lecturers    Lecturer[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model User {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  passwordHash  String?
+  role          String       @default("lecturer") // "lecturer", "super_admin"
+  isActive      Boolean      @default(true)
+  googleId      String?      @unique
+  lecturer      Lecturer?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Lecturer {
+  id               String            @id @default(uuid())
+  userId           String            @unique
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName        String
+  lastName         String
+  phone            String?
+  departmentId     String?
+  department       Department?       @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  programmeId      String?
+  programme        Programme?        @relation(fields: [programmeId], references: [id], onDelete: SetNull)
+  bankName         String?
+  bankAccountName  String?
+  accountNumber    String?
+  hourlyRate       Float             @default(0)
+  degreeRate       Float             @default(0)
+  odRate           Float             @default(0)
+  transportRate    Float             @default(0)
+  modules          Module[]
+  classes          Class[]
+  timetableEntries TimetableEntry[]
+  sessions         Session[]
+  claims           Claim[]
+  documents        Document[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model Module {
+  id               String            @id @default(uuid())
+  lecturerId       String
+  lecturer         Lecturer          @relation(fields: [lecturerId], references: [id], onDelete: Cascade)
+  code             String
+  name             String
+  isActive         Boolean           @default(true)
+  timetableEntries TimetableEntry[]
+  sessions         Session[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model Class {
+  id               String            @id @default(uuid())
+  lecturerId       String
+  lecturer         Lecturer          @relation(fields: [lecturerId], references: [id], onDelete: Cascade)
+  name             String            // e.g. "BTIT II", "ODIT I"
+  type             String            // "DEGREE" or "OD"
+  timetableEntries TimetableEntry[]
+  sessions         Session[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model TimetableEntry {
+  id           String      @id @default(uuid())
+  lecturerId   String
+  lecturer     Lecturer    @relation(fields: [lecturerId], references: [id], onDelete: Cascade)
+  moduleId     String
+  module       Module      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  classId      String
+  class        Class       @relation(fields: [classId], references: [id], onDelete: Cascade)
+  dayOfWeek    Int         // 1 (Monday) to 7 (Sunday)
+  startTime    String      // "08:00"
+  endTime      String      // "11:00"
+  room         String?     // e.g. "Lab 3"
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Session {
+  id           String      @id @default(uuid())
+  lecturerId   String
+  lecturer     Lecturer    @relation(fields: [lecturerId], references: [id], onDelete: Cascade)
+  moduleId     String
+  module       Module      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  classId      String
+  class        Class       @relation(fields: [classId], references: [id], onDelete: Cascade)
+  date         String      // "YYYY-MM-DD"
+  hours        Float
+  hourlyRate   Float
+  tuition      Float
+  transport    Float
+  gross        Float
+  status       String      @default("PENDING") // PENDING, APPROVED, REJECTED
+  feedback     String?
+  documents    Document[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Claim {
+  id             String      @id @default(uuid())
+  lecturerId     String
+  lecturer       Lecturer    @relation(fields: [lecturerId], references: [id], onDelete: Cascade)
+  month          Int         // 1-12
+  year           Int         // e.g. 2026
+  totalHours     Float       @default(0)
+  totalTuition   Float       @default(0)
+  totalTransport Float       @default(0)
+  totalGross     Float       @default(0)
+  status         String      @default("PENDING") // PENDING, APPROVED, REJECTED
+  feedback       String?
+  documents      Document[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model Document {
+  id         String      @id @default(uuid())
+  lecturerId String
+  lecturer   Lecturer    @relation(fields: [lecturerId], references: [id], onDelete: Cascade)
+  sessionId  String?
+  session    Session?    @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  claimId    String?
+  claim      Claim?      @relation(fields: [claimId], references: [id], onDelete: SetNull)
+  name       String
+  fileUrl    String
+  fileType   String
+  category   String      @default("ATTENDANCE_SHEET") // ATTENDANCE_SHEET, TIMETABLE, OTHER
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
