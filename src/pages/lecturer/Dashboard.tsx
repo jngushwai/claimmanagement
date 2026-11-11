@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
-import { Clock, DollarSign, FileText, Calendar, ArrowUpRight, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Clock, DollarSign, FileText, Calendar, BookOpen, Users } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Link } from 'react-router-dom';
 
@@ -22,13 +22,15 @@ export const LecturerDashboard: React.FC = () => {
   const stats = data?.currentMonthStats || { totalHours: 0, totalTuition: 0, totalTransport: 0, grossPay: 0, sessionCount: 0 };
   const recentSessions = data?.recentSessions || [];
   const earnings = data?.monthlyEarnings || [];
+  const assignedClasses = data?.assignedClasses || [];
+  const assignedModules = data?.assignedModules || [];
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-white">Lecturer Workspace</h1>
-          <p className="text-sm text-slate-400">Current month teaching consultation summary & earnings</p>
+          <h1 className="text-2xl font-bold text-black">Lecturer Workspace & Assigned Classes</h1>
+          <p className="text-sm text-slate-400">Current month teaching consultation summary, assigned classes, and earnings</p>
         </div>
         <div className="flex space-x-3">
           <Link
@@ -38,10 +40,10 @@ export const LecturerDashboard: React.FC = () => {
             Log Session
           </Link>
           <Link
-            to="/claims"
+            to="/modules"
             className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition border border-slate-700"
           >
-            View Claims
+            Manage Classes
           </Link>
         </div>
       </div>
@@ -82,6 +84,46 @@ export const LecturerDashboard: React.FC = () => {
           </div>
           <p className="text-2xl font-bold text-white mt-2">{stats.grossPay.toLocaleString()} TZS</p>
           <p className="text-xs text-purple-400 mt-1">Tuition + Transport</p>
+        </div>
+      </div>
+
+      {/* Assigned Classes & Teaching Modules Card */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow space-y-4">
+          <h3 className="font-bold text-white flex items-center gap-2"><Users size={18} className="text-blue-400" /> Assigned Student Classes</h3>
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {assignedClasses.length === 0 ? (
+              <p className="text-sm text-slate-500 py-2">No classes assigned yet.</p>
+            ) : (
+              assignedClasses.map((c: any) => (
+                <div key={c.id} className="p-3 bg-slate-950 rounded-lg border border-slate-800 flex justify-between items-center">
+                  <span className="font-semibold text-white">{c.name}</span>
+                  <span className={`px-2 py-0.5 rounded text-xs font-semibold ${c.type === 'DEGREE' ? 'bg-blue-950 text-blue-300' : 'bg-amber-950 text-amber-300'}`}>
+                    {c.type}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow space-y-4">
+          <h3 className="font-bold text-white flex items-center gap-2"><BookOpen size={18} className="text-emerald-400" /> Assigned Teaching Modules</h3>
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {assignedModules.length === 0 ? (
+              <p className="text-sm text-slate-500 py-2">No modules assigned yet.</p>
+            ) : (
+              assignedModules.map((m: any) => (
+                <div key={m.id} className="p-3 bg-slate-950 rounded-lg border border-slate-800 flex justify-between items-center">
+                  <div>
+                    <span className="font-semibold text-white">{m.code}</span>
+                    <p className="text-xs text-slate-400">{m.name}</p>
+                  </div>
+                  <span className="text-xs text-emerald-400 font-medium">Active</span>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
 

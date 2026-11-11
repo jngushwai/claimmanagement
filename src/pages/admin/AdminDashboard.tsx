@@ -26,7 +26,7 @@ export const AdminDashboard: React.FC = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-black flex items-center gap-2">
             <ShieldAlert className="text-amber-400" /> Super Admin Control Panel
           </h1>
           <p className="text-sm text-slate-400">Dar es Salaam Institute of Technology institutional claims & lecturer monitoring</p>

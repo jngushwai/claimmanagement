@@ -116,7 +116,7 @@ export const TimetablePage: React.FC = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-white">Weekly Timetable Planner</h1>
+          <h1 className="text-2xl font-bold text-black">Weekly Timetable Planner</h1>
           <p className="text-sm text-slate-400">Manage your recurring teaching schedule & 1-click session generator</p>
         </div>
         <div className="flex space-x-3">

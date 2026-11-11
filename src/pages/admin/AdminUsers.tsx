@@ -139,7 +139,7 @@ export const AdminUsers: React.FC = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-white">User & Lecturer Management</h1>
+          <h1 className="text-2xl font-bold text-black">User & Lecturer Management</h1>
           <p className="text-sm text-slate-400">Create accounts, assign roles, configure hourly rates, and enable/disable access</p>
         </div>
         <button

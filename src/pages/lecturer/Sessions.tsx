@@ -78,7 +78,7 @@ export const SessionsPage: React.FC = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-white">Teaching Sessions & Manual Logging</h1>
+          <h1 className="text-2xl font-bold text-black">Teaching Sessions & Manual Logging</h1>
           <p className="text-sm text-slate-400">Log consultancy sessions with calendar date picker and starting time</p>
         </div>
 

@@ -9,8 +9,8 @@ export const Navbar: React.FC = () => {
     <header className="bg-[#003366] text-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="bg-white text-[#003366] p-2 rounded-lg font-black text-xl tracking-wider">
-            DIT
+          <div className="bg-white p-1 rounded-lg w-10 h-10 flex items-center justify-center shadow">
+            <img src="/assets/aistudio/new_DIT_d71fb25e.png" alt="DIT Logo" className="w-8 h-8 object-contain" />
           </div>
           <div>
             <h1 className="font-bold text-lg leading-tight">Dar es Salaam Institute of Technology</h1>

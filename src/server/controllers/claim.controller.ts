@@ -80,7 +80,7 @@ My bank account details for direct transfer are as follows:
 - Account Name: ${lecturer.bankAccountName || lecturer.firstName + ' ' + lecturer.lastName}
 - Account Number: ${lecturer.accountNumber || '0150000000000'}
 
-Attached herewith is the verified student attendance sheet and session breakdown for your review and approval.
+Attached herewith is the verified student attendance sheet (PDF) and session breakdown for your review and approval.
 
 Thank you for your continued cooperation and support.
 
@@ -150,6 +150,14 @@ export async function uploadDocument(req: AuthRequest, res: Response) {
     const lecturer = db.prepare('SELECT id FROM lecturers WHERE userId = ?').get(req.user!.id) as any;
     const { claimId, sessionId, category } = req.body;
     if (!req.file) return res.status(400).json({ error: 'File required' });
+
+    // Validate that student attendance sheet is PDF only
+    const isAttendance = (category || 'ATTENDANCE_SHEET') === 'ATTENDANCE_SHEET';
+    const isPdf = req.file.mimetype === 'application/pdf' || req.file.originalname.toLowerCase().endsWith('.pdf');
+
+    if (isAttendance && !isPdf) {
+      return res.status(400).json({ error: 'Student attendance sheet must be uploaded in PDF format only (.pdf)' });
+    }
 
     const fileUrl = `/uploads/${req.file.filename}`;
     const id = crypto.randomUUID();

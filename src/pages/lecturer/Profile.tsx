@@ -99,7 +99,7 @@ export const ProfilePage: React.FC = () => {
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold text-white">Lecturer Profile & Settings</h1>
+        <h1 className="text-2xl font-bold text-black">Lecturer Profile & Settings</h1>
         <p className="text-sm text-slate-400">Manage personal details, banking information, hourly rates, and account security</p>
       </div>
 

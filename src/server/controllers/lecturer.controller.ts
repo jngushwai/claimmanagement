@@ -34,6 +34,10 @@ export async function getDashboardStats(req: AuthRequest, res: Response) {
     const totalTransport = formattedSessions.reduce((acc, s) => acc + s.transport, 0);
     const grossPay = totalTuition + totalTransport;
 
+    // Assigned classes and modules
+    const assignedClasses = db.prepare('SELECT * FROM classes WHERE lecturerId = ? ORDER BY name ASC').all(lecturerId);
+    const assignedModules = db.prepare('SELECT * FROM modules WHERE lecturerId = ? ORDER BY code ASC').all(lecturerId);
+
     // 12-month earnings bar chart
     const monthlyEarnings = [];
     for (let i = 11; i >= 0; i--) {
@@ -63,6 +67,8 @@ export async function getDashboardStats(req: AuthRequest, res: Response) {
       },
       recentSessions: formattedSessions.slice(0, 5),
       monthlyEarnings,
+      assignedClasses,
+      assignedModules,
     });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });

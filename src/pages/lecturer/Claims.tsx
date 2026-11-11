@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
 import { Claim } from '../../types';
-import { FileText, Download, Upload, CheckCircle, AlertCircle, Mail } from 'lucide-react';
+import { FileText, Download, Upload, CheckCircle, AlertCircle, Mail, MessageSquareWarning, FileDown, MessageCircle } from 'lucide-react';
 
 export const ClaimsPage: React.FC = () => {
   const [claims, setClaims] = useState<Claim[]>([]);
@@ -60,10 +60,34 @@ export const ClaimsPage: React.FC = () => {
     }
   };
 
+  const handleDownloadWordLetter = () => {
+    const htmlContent = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head><title>Payment Request Letter</title><style>body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.6; }</style></head>
+      <body>
+        <div style="white-space: pre-wrap;">${claimLetter}</div>
+      </body>
+      </html>
+    `;
+    const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `DIT_Payment_Request_Letter_${genMonth}_${genYear}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleUploadDoc = async (e: React.FormEvent, claimId: string) => {
     e.preventDefault();
     if (!uploadFile) {
       alert('Student attendance sheet upload is mandatory!');
+      return;
+    }
+
+    if (!uploadFile.name.toLowerCase().endsWith('.pdf') && uploadFile.type !== 'application/pdf') {
+      alert('Student attendance sheet must be uploaded in PDF format only (.pdf)!');
       return;
     }
 
@@ -76,25 +100,62 @@ export const ClaimsPage: React.FC = () => {
       await api.post('/documents', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      alert('Mandatory student attendance sheet uploaded successfully!');
+      alert('Mandatory student attendance PDF uploaded successfully!');
       setUploadFile(null);
       setUploadClaimId('');
       fetchClaims();
-    } catch (err) {
-      alert('Failed to upload attendance document');
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Failed to upload attendance document');
     }
   };
+
+  const claimsWithFeedback = claims.filter(c => c.feedback);
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-white">Monthly Claims, Cover Letters & Attendance Uploads</h1>
-        <p className="text-sm text-slate-400">Generate monthly claims matching DIT standard formats, official payment letters, and mandatory attendance sheets</p>
+        <h1 className="text-2xl font-bold text-black">Monthly Claims, Word Letters & PDF Attendance Uploads</h1>
+        <p className="text-sm text-slate-400">Generate monthly claims matching DIT standard formats, Word payment letters, and mandatory PDF attendance sheets</p>
       </div>
+
+      {/* HOD Feedback & Comments Section */}
+      {claimsWithFeedback.length > 0 && (
+        <div className="bg-blue-950/40 border border-blue-800/60 p-6 rounded-xl shadow space-y-4">
+          <h3 className="font-bold text-blue-200 flex items-center gap-2 text-base">
+            <MessageCircle size={20} className="text-blue-400" /> Head of Department (HOD) Comments & Feedback Notes
+          </h3>
+          <p className="text-xs text-blue-200/80">Below are the review comments and feedback notes provided by the HOD for your submitted claims:</p>
+          <div className="space-y-3">
+            {claimsWithFeedback.map(c => (
+              <div key={c.id} className="bg-slate-950 p-4 rounded-lg border border-blue-900/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-white">Period: {c.month}/{c.year}</span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                      c.status === 'APPROVED' ? 'bg-emerald-950 text-emerald-300' :
+                      c.status === 'REJECTED' ? 'bg-red-950 text-red-300' :
+                      'bg-amber-950 text-amber-300'
+                    }`}>
+                      {c.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-amber-200 mt-1.5 bg-slate-900 p-2.5 rounded border border-slate-800"><span className="font-semibold text-amber-400">HOD Comment:</span> "{c.feedback}"</p>
+                </div>
+                <button
+                  onClick={() => handleDownloadExcel(c.month, c.year)}
+                  className="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded text-xs font-semibold shrink-0 border border-slate-700"
+                >
+                  Download Excel Form
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Generate Claim Card */}
       <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow space-y-4">
-        <h3 className="font-bold text-white flex items-center gap-2"><FileText size={18} className="text-blue-400" /> Generate Monthly Claim & Payment Letter</h3>
+        <h3 className="font-bold text-white flex items-center gap-2"><FileText size={18} className="text-blue-400" /> Generate Monthly Claim & Word Letter</h3>
         <form onSubmit={handleGenerateClaim} className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
           <div>
             <label className="block text-xs text-slate-400 mb-1">Month</label>
@@ -161,7 +222,15 @@ export const ClaimsPage: React.FC = () => {
 
             {/* Corresponding Monthly Claim Letter */}
             <div className="p-6 bg-slate-950 rounded-xl border border-slate-800 space-y-3">
-              <h4 className="font-bold text-white flex items-center gap-2 text-sm"><Mail size={16} className="text-amber-400" /> Corresponding Monthly Payment Request Letter</h4>
+              <div className="flex justify-between items-center">
+                <h4 className="font-bold text-white flex items-center gap-2 text-sm"><Mail size={16} className="text-amber-400" /> Corresponding Monthly Payment Request Letter</h4>
+                <button
+                  onClick={handleDownloadWordLetter}
+                  className="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition shadow"
+                >
+                  <FileDown size={14} /> <span>Download Letter as Word (.doc)</span>
+                </button>
+              </div>
               <pre className="bg-slate-900 p-4 rounded-lg text-xs text-slate-300 font-mono whitespace-pre-wrap leading-relaxed border border-slate-800">
                 {claimLetter}
               </pre>
@@ -173,7 +242,7 @@ export const ClaimsPage: React.FC = () => {
       {/* Submitted Claims List */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl shadow overflow-hidden">
         <div className="p-5 border-b border-slate-800">
-          <h3 className="font-bold text-white">Your Submitted Claims History & Mandatory Attendance Verification</h3>
+          <h3 className="font-bold text-white">Your Submitted Claims History & Mandatory PDF Attendance Verification</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-300">
@@ -185,7 +254,7 @@ export const ClaimsPage: React.FC = () => {
                 <th className="p-3">Transport</th>
                 <th className="p-3">Gross Pay</th>
                 <th className="p-3">HOD Status & Comments</th>
-                <th className="p-3">Mandatory Attendance Sheet</th>
+                <th className="p-3">Mandatory Attendance (PDF Only)</th>
                 <th className="p-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -210,36 +279,37 @@ export const ClaimsPage: React.FC = () => {
                       }`}>
                         {c.status}
                       </span>
-                      {c.feedback && <p className="text-xs text-slate-400 mt-1 italic">HOD Feedback: {c.feedback}</p>}
+                      {c.feedback && <p className="text-xs text-amber-300 mt-1.5 bg-slate-950 p-2 rounded border border-slate-800"><span className="font-semibold text-amber-400">HOD Comment:</span> "{c.feedback}"</p>}
                     </td>
                     <td className="p-3">
                       <div className="space-y-1">
                         {c.documents?.length === 0 && (
                           <span className="text-xs text-red-400 font-semibold flex items-center gap-1">
-                            <AlertCircle size={12} /> Attendance Sheet Mandatory
+                            <AlertCircle size={12} /> PDF Attendance Mandatory
                           </span>
                         )}
                         {c.documents?.map(d => (
                           <a key={d.id} href={d.fileUrl} target="_blank" rel="noreferrer" className="block text-xs text-blue-400 hover:underline">
-                            ✅ {d.name}
+                            📄 {d.name}
                           </a>
                         ))}
                         {uploadClaimId === c.id ? (
                           <form onSubmit={e => handleUploadDoc(e, c.id)} className="mt-2 space-y-2">
                             <input
                               type="file"
+                              accept=".pdf,application/pdf"
                               required
                               onChange={e => setUploadFile(e.target.files?.[0] || null)}
-                              className="text-xs text-slate-400"
+                              className="text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-blue-950 file:text-blue-300"
                             />
                             <div className="flex space-x-2">
-                              <button type="submit" className="bg-blue-600 text-white px-2 py-1 rounded text-xs">Upload Attendance</button>
+                              <button type="submit" className="bg-blue-600 text-white px-2 py-1 rounded text-xs">Upload PDF</button>
                               <button type="button" onClick={() => setUploadClaimId('')} className="bg-slate-800 text-slate-300 px-2 py-1 rounded text-xs">Cancel</button>
                             </div>
                           </form>
                         ) : (
                           <button onClick={() => setUploadClaimId(c.id)} className="text-xs bg-blue-950 hover:bg-blue-900 text-blue-300 border border-blue-800 px-2.5 py-1 rounded mt-1">
-                            + Upload Attendance
+                            + Upload PDF Attendance
                           </button>
                         )}
                       </div>

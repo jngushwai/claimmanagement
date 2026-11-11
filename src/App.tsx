@@ -24,7 +24,7 @@ import { AdminClaims } from './pages/admin/AdminClaims';
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#E3F3F7] text-slate-800 flex flex-col font-sans">
       <Navbar />
       <div className="flex flex-1">
         <Sidebar />

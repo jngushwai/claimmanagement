@@ -81,7 +81,7 @@ export const ModulesClasses: React.FC = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-white">Modules & Classes Management</h1>
+        <h1 className="text-2xl font-bold text-black">Modules & Classes Management</h1>
         <p className="text-sm text-slate-400">Configure your teaching modules and student class groups</p>
       </div>
 
